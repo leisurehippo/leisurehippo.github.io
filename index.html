@@ -152,6 +152,240 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-FFM" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/17/FFM/">FFM</a>
+    </h1>
+  
+
+        
+        <a href="/2018/09/17/FFM/" class="archive-article-date">
+  	<time datetime="2018-09-17T08:54:23.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-09-17</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/09/17/FFM/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-SVM" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/17/SVM/">SVM</a>
+    </h1>
+  
+
+        
+        <a href="/2018/09/17/SVM/" class="archive-article-date">
+  	<time datetime="2018-09-17T08:54:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-09-17</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/09/17/SVM/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-boosting" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/17/boosting/">boosting</a>
+    </h1>
+  
+
+        
+        <a href="/2018/09/17/boosting/" class="archive-article-date">
+  	<time datetime="2018-09-17T08:54:05.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-09-17</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+
+<p>提升方法的基本思路就是组合多个弱学习算法构成一个强的学习算法。</p>
+<p>###AdaBoost算法<br>AdaBoost算法的思路是，每次用一个弱学习算法对数据进行学习时，更加关注由上一个算法学习后被分类错误的数据。最后将各个弱学习算法按不同权值加和组成强学习算法。具体算法如下：</p>
+<ol>
+<li>初始化训练数据的权值$$D_1 = (w_{11},…,w_{1i},…,w_{1N}),\quad w_{1i}=\frac{1}{N}, \quad i=1,2,…,N$$</li>
+<li>对m=1,2,…,M<br>(a) 使用具有权值分布$D_m$的数据集进行学习，得到基本分类器$G_m(x):\mathcal{X} \to {-1,+1}$<br>(b) 计算$G_m(x)$ 在训练数据集上的分类误差率$$e_m = P(G_m(x_i)\ne y_i)=\sum_{i=1}^Nw_{mi}I(G_m(x_i)\ne y_i) = \sum_{G_m(x_i)\ne y_i}w_{wi}$$<br>(c) 计算$G_m(x)$ 的系数$$\alpha_m = \frac{1}{2}ln\frac{1-e_m}{e_m}$$<br>(d) 更新数据集的权值分布$$D_{m+1}=(w_{m+1,1},…,w_{m+1,i},…,w_{m+1,N})$$ $$w_{m+1,i} = \frac{w_{mi}}{Z_m}exp(-\alpha_my_iG_m(x_i)),\quad i=1,2,…,N$$ $Z_m$ 是规范化因子，使$D_{m+1}$ 成为一个概率分布$$Z_m = \sum_{i=1}^Nw_{mi}exp(-\alpha_my_iG_m(x_i))$$</li>
+<li>构建基本分类器的线性组合$$f(x) = \sum_{m=1}^M\alpha_mG_m(x)$$ 得到最终的分类器$$G(x) = sign(f(x))=sign(\sum_{m=1}^M\alpha_mG_m(x))$$</li>
+</ol>
+<p>AdaBoost算法最终分类器的训练误差界为$$\frac{1}{N}\sum_{i=1}^N I(G(x_i)\ne y_i) \leqslant \frac{1}{N}\sum_{i} exp(-y_if(x_i)) = \prod_{m}Z_m$$ $$\prod_{m=1}^MZ_m = \prod_{m=1}^M [2\sqrt{e_m(1-e_m)}] = \prod_{m=1}^M\sqrt{(1-4\gamma_m^2)}\leqslant exp(-2\sum_{m=1}^M\gamma_m^2)$$ 其中$\gamma_m = \frac{1}{2}-e_m$ 相关证明在《统计学习方法》P142-P143<br>由上式可知，如果存在$\gamma&gt;0$ ，对所有$m$ 有$\gamma_m\geqslant\gamma$ ，则$$\frac{1}{N}\sum_{i=1}^{N}I(G(x_i)\ne y_i)\leqslant exp(-2M\gamma^2)$$ 表明AdaBoost的训练误差是以指数速率下降的。</p>
+<p>###前向分步算法<br>考虑加法模型$$f(x) = \sum_{m=1}^M\beta_mb(x;\gamma_m)$$ ,学习的损失函数最小化问题为$$\min_{\beta_m,\gamma_m}\sum_{i=1}^N L(y_i,\sum_{m=1}^{M}\beta_mb(x;\gamma_m))$$ 这是一个复杂的优化问题。前向分步算法求解的思路是：因为学习的是加法模型，如果能够从前向后，每一步只学习一个基函数及其系数，<strong>逐步</strong>逼近优化目标函数式，就可以简化优化的负责度。具体的算法如下</p>
+<ol>
+<li>初始化$f_0(x)=0$</li>
+<li>对m=1,2,…,M<br>(a) 极小化损失函数$$(\beta_m,\gamma_m) = arg\min_{\beta,\gamma}\sum_{i=1}^NL(y_i,f_{m-1}(x_i)+\beta b(x_i;\gamma))$$ 得到参数$\beta_m,\gamma_m$<br>(b) 更新$$f_m(x) = f_{m-1}(x)+\beta_mb(x;\gamma_m)$$</li>
+<li>得到加法模型$$f(x) = f_M(x) = \sum_{m=1}^M\beta_mb(x;\gamma_m)$$</li>
+</ol>
+<p>AdaBoost算法是前向分步算法的特例，模型是由基本分类器组成的加法模型，损失函数是指数函数。证明见P145-P146</p>
+<p>###提升树<br>提升树是以分类树或回归树为基本分类器的提升方法。$$f_M(x) = \sum_{m=1}^MT(x;\Theta_m)$$<br>采用前向分步算法，初始提升树$f_0(x) = 0$ ，第m步模型$f_m(x)=f_{m-1}(x)+T(x;\Theta_m)$。通过经验风险最小化确定下一颗决策树的参数$$\hat\Theta_m = arg\min_{\Theta_m}\sum_{i=1}^NL(y_i,f_{m-1}(x_i)+T(x_i;\Theta_m))$$ 不同问题的提升树学习算法，主要区别在于使用的损失函数不同，比如平方误差损失函数，指数损失函数等。当采用平方误差损失函数时，$$L(y,f(x)) = (y-f(x))^2$$ 其损失变为$$L(y,f_{m-1}(x)+T(x;\Theta_m))=[y-f_{m-1}(x)-T(x;\Theta_m)]^2$$ 将$y-f_{m-1}(x)$ 记为r（残差），则只需用当前模型拟合数据的残差即可。<br>但是对于其他的损失函数而言，每一步的优化就不会那么容易。Freidman提出了梯度提升算法。这是利用最速下降法的近似方法，其关键是利用损失函数的负梯度在当前模型的值作为回归问题提升树算法中的残差近似值，拟合一个回归树。$$-\left[\frac{\partial L(y,f(x_i))}{\partial f(x_i)}\right]<em>{f(x)=f</em>{m-1}(x)}$$<br>这种思路与传统Boost对正确、错误样本进行加权有着很大的区别，它是每次都会拟合上一轮模型学习的“残差”，每个新的模型是为了使得之前模型的残差往梯度方向减少。<br>这个就是<strong>GBDT</strong>回归算法的基本思路，对于GBDT分类算法，由于样本输出不是连续的值，而是离散的类别，导致我们无法直接从输出类别去拟合类别输出的误差。为了解决这个问题，主要有两个方法，一个是用指数损失函数，此时GBDT退化为Adaboost算法。另一种方法是用类似于逻辑回归的对数似然损失函数的方法。也就是说，我们用的是类别的预测概率值和真实概率值的差来拟合损失。</p>
+<p>对于树深度的设置，知乎上有一个很好的问答 <a href="https://www.zhihu.com/question/45487317" target="_blank" rel="noopener">知乎链接</a> 。这里作简要说明。<br>【问】xgboost/gbdt在调参时为什么树的深度很少就能达到很高的精度？但是用DecisionTree/RandomForest的时候需要把树的深度调到15或更高。<br>【答】一句话的解释，来自周志华老师的机器学习教科书（ 机器学习-周志华）：Boosting主要关注降低偏差，因此Boosting能基于泛化性能相当弱的学习器构建出很强的集成；Bagging主要关注降低方差，因此它在不剪枝的决策树、神经网络等学习器上效用更为明显。<br>  随机森林(random forest)和GBDT都是属于集成学习（ensemble learning)的范畴。集成学习下有两个重要的策略Bagging和Boosting。<br>  Bagging算法是这样做的：每个分类器都随机从原样本中做有放回的采样，然后分别在这些采样后的样本上训练分类器，然后再把这些分类器组合起来。简单的多数投票一般就可以。其代表算法是随机森林。Boosting的意思是这样，他通过迭代地训练一系列的分类器，每个分类器采用的样本分布都和上一轮的学习结果有关。其代表算法是AdaBoost, GBDT。<br>  对于Bagging算法来说，由于我们会并行地训练很多不同的分类器的目的就是防止或拟合 ，所以对于每个基分类器来说，目标就是如何降低偏差（bias），只需要关注最小化损失即可。所以我们会采用深度很深甚至不剪枝的决策树。<br>  对于Boosting来说，每一步我们都会在上一轮的基础上更加拟合原数据，所以可以保证偏差（bias）,所以对于每个基分类器来说，问题就在于如何选择variance更小的分类器，即更简单的分类器，所以我们选择了深度很浅的决策树。<br>  【问】为什么说bagging是减少variance，而boosting是减少bias?<a href="https://www.zhihu.com/question/26760839" target="_blank" rel="noopener">知乎连接</a></p>
+<p>###XGBoost<br>主要摘自陈天齐的PPT<br>基本模型，假设总共有K颗树$$\hat y_i = \sum_{k=1}^Kf_k(x_i),\quad f_k\in \mathcal F$$ 优化目标 $$Obj = \sum_{i=1}^Nl(y_i,\hat y_i) + \sum_{k=1}^K\Omega (f_k)$$<br>当使用平方误差损失函数时，就是普通的GBM；用log loss时，就是LogitBoost。<br>XGBoost和GBDT比较大的不同就是目标函数的定义，XGBoost利用泰勒展开做了一个近似。$$f(x+\Delta x)\simeq f(x)+f^{‘}(x)\Delta x+\frac{1}{2}f^{‘’}(x)\Delta x^2$$<br>$Obj^{(t)} =  \sum_{i=1}^Nl(y_i,\hat y_i^{(t-1)}+f_t(x_i)) + \Omega (f_t)+constant$<br>$ \qquad \ \ \simeq  \sum_{i=1}^N[l(y_i,\hat y_i^{(t-1)})+g_if_t(x_i)+\frac{1}{2}h_if_t(x_i)^2] + \Omega (f_t)+constant$<br>其中，$g_i = \partial_{\hat y^{(t-1)}}l(y_i,\hat y^{(t-1)})$，$h_i = \partial_{\hat y^{(t-1)}}^2l(y_i,\hat y^{(t-1)})$</p>
+<p>XGBoost中$f_t(x)$ 和 $\Omega(f_t)$ 定义如下<br><img src="http://img.blog.csdn.net/20171009221851408?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="f(x)"><br>q(x)定义样本属于哪个叶子节点，w(z)定义叶子节点的值<br><img src="http://img.blog.csdn.net/20171009221912775?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="omega(x)"><br>然后接着定义Obj，首先定义叶子节点j的样本$I_j = {i|q(x_i)=j}$<br>$Obj^{(t)} \simeq \sum_{i=1}^N[g_if_t(x_i)+\frac{1}{2}h_if_t^2(x_i)] + \Omega (f_t)$<br>$ \qquad \ \ =  \sum_{i=1}^N[g_iw_{q(x_i)}+\frac{1}{2}h_iw^2_{q(x_i)}] + \gamma T + \lambda \frac{1}{2} \sum_{j=1}^Tw_j^2$<br>$ \qquad \ \ =  \sum_{j=1}^T[(\sum_{i\in I_j} g_i)w_j + \frac{1}{2}(\sum_{i\in I_j} h_i +\lambda)w_j^2] + \gamma T$<br>他把原来对样本的加和变成了对叶子节点的加和，原先是对每一个样本计算它属于的叶子节点的值和$g_i$ 相乘，变换后，变成了计算这颗树的每个叶子节点上样本的和（因为这个叶子节点上样本的$w_j$ 是一样的，相当于提取公因式）<br>这时定义$G_j = \sum_{i\in I_j} g_i$ ， $H_j = \sum_{i\in I_j} h_i$<br>则Obj变为一个关于$w_j$ 的一元二次函数<br>$Obj^{(t)} = \sum_{j=1}^T[G_jw_j+\frac{1}{2}(H_j+\lambda)w_j^2] + \gamma T$<br>极值点为$w_j^* = -\frac{G_j}{H_j+\lambda}$ ，目标函数为$Obj = -\frac{1}{2}\sum_{j=1}^T\frac{G_j^2}{H_j+\lambda} + \gamma T$</p>
+<p>至此，目标函数定义完毕。现在需要枚举所有可能的树结构。具体做法：<br>从深度为0的树开始，对于每个节点，枚举所有特征。先将样本按该特征排序，然后遍历所有可能的切分点寻找最优切分点。依据是$Gain = \frac{1}{2}[\frac{G_L^2}{H_L+\lambda} + \frac{G_R^2}{H_R+\lambda} - \frac{(G_L+G_R)^2}{H_L+H_R+\lambda}] - \gamma$ （切分后左孩子的分数加右孩子的分数减不切分的分数）。Gain的值越大，分裂后L减小得越多。因为加入了$\gamma$ 新叶子的惩罚值，引入分割不一定会使得情况变好。<strong>优化这个目标对应了树的剪枝</strong>， 当引入的分割带来的增益小于一个阈值的时候，我们可以剪掉这个分割。<br>除了上面这种精确算法，还有一种近似算法，对于每个特征只考虑分位点，减少复杂度。比如这种三分位数<br><img src="http://img.blog.csdn.net/20171011213833286?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="三分位数"><br>实际上XGBoost不是按照样本个数进行分位，而是以二阶导数值作为权重，比如<br><img src="http://img.blog.csdn.net/20171011213921447?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="二阶导数"><br>为什么用$h_i$ 加权？把目标函数整理成以下形式，可以看出$h_i$ 有对loss加权的作用$$\sum_{i=1}^N\frac{1}{2}h_i(f_t(x_i)-\frac{g_i}{h_i})^2+\Omega(f_t)+constant$$</p>
+<p>总的算法流程：每轮迭代增加一颗新树，根据上述方法计算最优树，加入到模型中$y^{(t)} = y^{(t-1)} + \epsilon f_t(x_i)$ （$\epsilon$ 的作用是每一步都不要完全优化，防止过拟合）</p>
+<p>对于深度为K的树，时间复杂度为O(n d K logn)，每次排序需要O(n logn)，遍历d个特征，树深度为K。在论文中提出了并行化方案，由于提升方法是串行的，理论上不能并行化，但是XGB算法中，最耗时间的是样本的排序，论文提出一种叫做block的存储方式，将样本先按特征排好序存放在block中，每轮迭代使用时直接读取，这样时间复杂度降为O(n)。由于block按特征大小顺序存储，相应的样本梯度信息是分散的，造成内存的不连续访问，降低CPU cache的命中率。XGBoost预存数据到buffer中，再统计梯度信息。</p>
+<p>####GBDT和XGBoost区别<br>这里摘取知乎上wepon的回答，一定要看！！！ <a href="https://www.zhihu.com/question/41354392" target="_blank" rel="noopener">知乎上wepon的回答</a><br>GBDT在函数空间中利用梯度下降法进行优化；XGBoost在函数空间中用牛顿法进行优化。梯度下降法可以看做是将损失函数进行一阶泰勒展开：选取$\theta$ 初值，然后不断迭代（$\theta^t = \theta^{t-1}+\Delta\theta$）使损失函数$L(\theta)$ 最小化。将$L(\theta^t)$ 在$\theta^{t-1}$ 处进行一阶泰勒展开。<br>$L(\theta^t) = L(\theta^{t-1}+\Delta\theta)\simeq L(\theta^{t-1})+L^{‘}(\theta^{t-1})\Delta\theta$<br>要使得$L(\theta^t)&lt;L(\theta^{t-1})$ ，可取$\Delta\theta = -\alpha L^{‘}(\theta^{t-1})$ ，则$\theta^t = \theta^{t-1}-\alpha L^{‘}(\theta^{t-1})$<br>牛顿法是将$L(\theta^t)$ 在$\theta^{t-1}$ 处进行二阶泰勒展开。<br>$L(\theta^t)\simeq L(\theta^{t-1}) + L^{‘}(\theta^{t-1})\Delta\theta+L^{‘’}(\theta^{t-1})\frac{\Delta\theta^2}{2}$<br>要使$L(\theta^t)$ 极小，得$\Delta\theta = -\frac{g}{h}$ ，其中g,h分别是一阶和二阶导数。<br>相比于原始的GBDT，XGBoost的目标函数加了正则项。</p>
+<p>####正则项解释方式<br>wepon的解释</p>
+<ol>
+<li>通过偏差方差分解去解释</li>
+<li>PAC-learning泛化界解释<br>在知乎上找到有关Stein‘s Pheonomenon的解释，没怎么看懂！<br><img src="http://img.blog.csdn.net/20171011211114904?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="Stein"></li>
+<li>Bayes角度看，正则相当于对模型引入了先验分布。<br><img src="http://img.blog.csdn.net/20171011211351145?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="Bayes"></li>
+</ol>
+<p>###LightGBM<br>相比XGB，LGB速度更快，内存占用更低。<br>LightGBM的改进</p>
+<ol>
+<li>直方图算法<br>把连续的浮点特征值离散化成k个整数，同时构造一个宽度为k的直方图。在遍历数据的时候，根据离散化后的值作为索引在直方图中累积统计量，当遍历一次数据后，直方图累积了需要的统计量，然后根据直方图的离散值，遍历寻找最优的分割点。<br><img src="http://img.blog.csdn.net/20171011215348741?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="his"></li>
+<li>直方图差加速<br>一个叶子的直方图可以由他的父亲节点的直方图和兄弟节点的直方图做差得到。选取哪个叶子<br><img src="http://img.blog.csdn.net/20171011220423771?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="level-wise&amp;leaf-wise"></li>
+</ol>
+<p>参考<br><a href="http://10.3.200.202/cache/9/03/wepon.me/5aa84bcab4e621a09cc475c348590c35/gbdt.pdf" target="_blank" rel="noopener">gbdt算法原理与系统设计简介</a><br><a href="http://blog.csdn.net/a819825294/article/details/51206410" target="_blank" rel="noopener">xgboost原理</a><br><a href="http://learningsys.org/papers/LearningSys_2015_paper_32.pdf" target="_blank" rel="noopener">XGBoost Reliable Large-scale Tree Boosting System</a><br><a href="http://homes.cs.washington.edu/~tqchen/pdf/BoostedTree.pdf" target="_blank" rel="noopener">BoostedTree</a><br><a href="https://www.zhihu.com/question/20700829" target="_blank" rel="noopener">正则化</a><br><a href="https://papers.nips.cc/paper/6907-lightgbm-a-highly-efficient-gradient-boosting-decision-tree" target="_blank" rel="noopener">LightGBM论文</a><br><a href="https://github.com/Microsoft/LightGBM" target="_blank" rel="noopener">LightGBM github</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">ML</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/09/17/boosting/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-Divide-and-Conquer" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -337,6 +571,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">Algorithms</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">ML</a>
               </li>
             
             <div class="clearfix"></div>
