@@ -172,7 +172,28 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+
+<p>本文参考了美团团队的介绍文章。<br><a href="https://tech.meituan.com/deep_understanding_of_ffm_principles_and_practices.html" target="_blank" rel="noopener">https://tech.meituan.com/deep_understanding_of_ffm_principles_and_practices.html</a><br>以及<br><a href="http://blog.csdn.net/zc02051126/article/details/54614230" target="_blank" rel="noopener">http://blog.csdn.net/zc02051126/article/details/54614230</a></p>
+<p>FM和FFM模型是最近几年提出的模型，凭借其在数据量比较大并且特征稀疏的情况下，仍然能够得到优秀的性能和效果的特性，屡次在各大公司举办的CTR预估比赛中获得不错的战绩。</p>
+<p>###FM原理<br>FM模型的提出旨在解决稀疏数据下的特征组合问题。假设一个广告分类问题，根据广告位信息和用户信息，预测用户是否点击广告。<br>| Clicked? | Country | Day | Ad_type |<br>| :– | : – | : – | :– |<br>|1|USA|26/11/15|Movie<br>|0|China|1/7/14|Game<br>|1|China|19/2/15|Game</p>
+<p>三个特征都是类别型特征，经过one-hot编码<br>|Clicked?|Country=USA|Country=China|Day=26/11/15 | Day=1/7/14|Day=19/2/15|Ad_type=Movie|Ad_type=Game|<br>| :– | : – | : – | :– |<br>|1|1|0|1|0|0|1|0<br>|1|0|1|0|1|0|0|1<br>|1|0|1|0|0|1|0|1</p>
+<p>通过观察可以发现，某些特征经过关联会更加有意义。比如Country=USA和Day=26/11/15（感恩节），Country=USA和Day=19/2/15（春节）这样的关联对用户的点击有着正向的影响。而一些其他的组合（Country=USA和Day=26/11/15）可能对用户点击并没有那么强烈的影响。因此引入两个特征的组合是非常有意义的。</p>
+<p>多项式模型是包含特征组合最直观的模型，模型表达式如下</p>
+<p>$$ y(x) = w_0+\sum_{i=1}^n w_ix_i + \sum_{i=1}^n \sum_{j=i+1}^n w_{ij} x_ix_j $$</p>
+<p>其中，$n$ 代表样本特征数量，$x_i$ 是第 $i$ 个特征的值，$w_0,w_i,w_{ij}$ 是模型参数。<br>从公式可以看出，组合特征的参数一共有$\dfrac{n(n-1)}{2}$ 种，任意两个参数是独立的。<br>当我们想把这个模型运用到点击率预测时，会发现训练每个二次项系数都需要大量的 $x_i$ 和 $x_j$ 都非0的样本。而由于经过了one-hot编码，数据变得很稀疏，导致训练样本的不足，$w_{ij}$ 会不准确，因此二次项参数的训练是变得困难，验证影响模型的性能。</p>
+<p>那么如何解决这个问题呢？矩阵分解提供了思路。<br>$$ Key\ idea : Set \ w_{i,j}  = &lt;v_i,v_j&gt; $$<br>$v_i$ 是k维的向量<br>idea的来源是不同的组合特征之间相互不是独立的，他们之间的联系通过一个隐因子建立。<br>例如在协同过滤中，一个rating矩阵可以分解为user矩阵和item矩阵，每个user和item都可以用一个隐向量表示，下例中把一个user表示成一个二维向量，同时把每个item表示成一个二维向量，两个向量的点积就是矩阵中user对item的打分。</p>
+<p><img src="http://img.blog.csdn.net/20170702180054329?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="协同过滤"></p>
+<p>类似的，所有的二次项系数 $w_{ij}$ 可以组成一个对称阵W，那么这个矩阵就可以分解为 $V^TV$ ，V的第j列就是第j维特征的隐向量。因此，FM的模型方程为<br>$$ y(x) = w_0+\sum_{i=1}^nw_ix_i+\sum_{i=1}^n\sum_{j=i+1}^n&lt;v_i,v_j&gt;x_ix_j $$<br>其中，$ v_i $ 是第 $i$ 维特征的隐向量，&lt;·,·&gt;代表点积。隐向量的长度为$k(k&lt;&lt;n)$包含$k$个描述特征的因子。<br>这样变换后，二次项的参数减少到$kn$ 个，远少于多项式模型的参数数量。而且参数之间有了联系，比如$x_hx_i$ 和 $x_ix_j$ 的系数分别是$&lt;v_h,v_i&gt;$ 和 $&lt;v_i,v_j&gt;$ 他们之间有共同项$v_i$ ，这样所有包含$x_i$ 的非零组合特征的样本都可以用来学习隐向量$v_i$ ,很大程度上避免了数据稀疏造成的影响。<br>直观上看，FM的复杂度是$O(kn^2)$ 。通过下面式子化简，复杂度可以优化到$O(kn)$<br>$$ \sum_{i=1}^n\sum_{j=i+1}^n&lt;v_i,v_j&gt;x_ix_j=\dfrac{1}2\sum_{f=1}^k\biggl(\Bigl(\sum_{i=1}^nv_{i,f}x_i\Bigl)^2-\sum_{i=1}^nv_{i,f}^2x_i^2\biggl)$$<br>推导过程如下<br><img src="http://img.blog.csdn.net/20180309223554592?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="推导过程"><br>利用SGD(Stochastic Gradient Descent)训练模型，梯度如下<br>$$\dfrac{\partial}{\partial \theta}y(x)=\begin{cases}<br>1,  &amp; \text{if $\theta$ is $w_0$} \<br>x_i, &amp; \text{if $\theta$ is $w_i$}\<br>x_i\sum_{j=1}^n v_{j,f}x_j-v_{i,f}x_i^2, &amp; \text{if $\theta$ is $v_{i,f}$}<br>\end{cases}$$<br>其中，$v_{j,f}$ 是隐向量$v_j$ 的第$f$个元素，由于$\sum_{j=1}^nv_{j,f}x_j$ 只与$f$ 有关，在每次迭代时只需计算一下所有$f$ 的$\sum_{j=1}^nv_{j,f}x_j$ 就能够方便的得到所有$v_{j,f}$ 的梯度，复杂度为$O(kn)$ ；已知$\sum_{j=1}^nv_{j,f}x_j$时，计算每个参数梯度的复杂度是$O(1)$ ；得到梯度后，更新每个参数的复杂度是$O(1)$ ；模型参数一共有$nk+n+1$ 个。因此，FM参数训练的复杂度也是$O(kn)$ 。综上，FM可以在线性时间训练和预测，是一个非常高效的模型。</p>
+<p>###FFM原理<br>ffm引入了field的概念。不同field之间的隐因子变得不同。用$&lt;v_{i,f(j)},v_{j,f(i)}&gt;$ 代替$&lt;v_i,v_j&gt;$，其中$f(i)$ 是特征$i$所属的field。<br>简单来说，同一个类别型特征经过one-hot编码后的都可以放到同一个field中。<br>为什么要引入field这个概念呢？我的理解是FM模型的二次项参数是一个个相互独立的数，但是特征之间在根本上还是有原始类别的，FM模型并没有体现出这一点。现在把之前一个个的数变成了一个个的向量<br><img src="http://img.blog.csdn.net/20170703210453793?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="vector"><br>这样特征之间就有了域的概念了。<br>假设样本的n个特征属于f个field，那么FFM的二次项有nf个隐向量。而在FM中，每一维特征的隐向量只有一个。FM可以看做是只有一个field的FFM模型。FFM的模型方程如下<br>$$ y(x) = w_0+\sum_{i=1}^nw_ix_i+\sum_{i=1}^n\sum_{j=i+1}^n&lt;v_{i,f_j},v_{j,f_i}&gt;x_ix_j $$<br>其中，$f_j$ 是第$j$ 个特征所属的field。如果隐向量的长度为$k$ , 那么FFM的二次参数有$nfk$ 个，远多于FM模型的$nk$ 个。此外，由于隐向量与field相关，FFM的二次项不能化简，其预测的复杂度是$O(kn^2)$<br>FFM的编码格式如下<br>数据<br>|User|Movie|Genre|Price|<br>|:–|<br>|YuChin|3Idiots|Comedy,Drama|$9,99<br>FFM格式<br><img src="http://img.blog.csdn.net/20170703151119791?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="ffm格式"><br>转换成LIBFFM格式为<br>1:1:1 2:2:2 3:3:1 3:4:1 4:5:9.99<br>FFM的组合有10项，如下图所示<br><img src="http://img.blog.csdn.net/20170703154606215?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="ffm"></p>
+<p>###LIBFFM<br>台湾大学开发的libffm网址 <a href="http://www.csie.ntu.edu.tw/~cjlin/libffm/" target="_blank" rel="noopener">http://www.csie.ntu.edu.tw/~cjlin/libffm/</a><br>这个版本的ffm省略了常数项和一次项。模型方程如下<br>$$ \phi(w,x) = \sum_{j_1,j_2\in C_2}&lt;w_{j_1,f_2},w_{j_2,f_1}&gt;x_{j_1}x_{j_2} $$<br>其中$C_2$ 是非零特征的二元组合，$j_1$ 是特征。属于field $f_1$ ,$w_{j_1,f_2}$ 是特征$j_1$ 对field $f_2$ 的隐向量。此FFM模型采用Logistic loss作为损失函数，L2惩罚项，因此只能用于二元分类<br>$$\min_{w}\sum_{i=1}^Llog(1+exp{-y_i\phi(w,x_i)})+\dfrac{\lambda}{2}||w||^2$$<br>算法采用SGD优化过程，在寻优时，采用了一些小技巧<br>第一，梯度分布计算。采用SGD训练FFM模型时，只采用单个样本的损失函数来计算模型参数的梯度。<br>$$\mathcal L = \mathcal L_{err}+\mathcal L_{reg}=log(1+exp({-y_i\phi(w,x_i)})+\dfrac{\lambda}{2}||w||^2$$<br>$$\dfrac{\partial\mathcal L}{\partial w} = \dfrac{\partial\mathcal L_{err}}{\partial\phi}.\dfrac{\partial\phi}{\partial w} + \dfrac{\partial\mathcal L_{reg}}{\partial w}$$<br>上面公式表明，$\dfrac{\partial\mathcal L_{err}}{\partial\phi}$ 与具体模型参数无关，因此每次更新模型时，只需计算一次，之后每次调用值即可。<br>第二，自适应学习率。此版本的FFM实现没有采用常用的指数递减的学习率更新策略，而是利用$nfk$ 个浮点数的临时空间，自适应地更新学习率。学习率是参考AdaGrad算法计算的，按如下更新<br>$$w_{j_1,f_2}^{‘} = w_{j_1,f_2} - \dfrac{\eta}{\sqrt{1+\sum_t(g_{w_{j_1,f_2}}^t)^2}}.g_{w_{j_1,f_2}}$$<br>其中，$w_{j_1,f_2}$ 是特征$j_1$ 对field $f_2$ 隐向量的一个元素，$g_{w_{j_1,f_2}}$ 是损失函数对参数$w_{j_1,f_2}$ 的梯度；$g_{w_{j_1,f_2}}^t$ 是第t次迭代的梯度；$\eta$ 是初始学习速率。可以看出，随着迭代的进行，每个参数的历史梯度会慢慢累加，导致每个参数的学习率逐渐减小。另外，每个参数的学习率更新速度是不同的，与其历史梯度有关，根据AdaGrad的特点，对于样本比较稀疏的特征，学习率高于样本比较密集的特征，因此每个参数既可以比较快速达到最优，也不会导致验证误差出现很大的震荡。<br>第三，OpenMP多核并行计算。OpenMP是用于共享内存并行系统的多处理器程序设计的编译方案，便于移植和多核扩展。FFM的源码采用了OpenMP的API，对参数训练过程SGD进行了多线程扩展，支持多线程编译。因此，OpenMP技术极大地提高了FFM的训练效率和多核CPU的利用率。在训练模型时，输入的训练参数ns_threads指定了线程数量，一般设定为CPU的核心数，便于完全利用CPU资源。<br>第四，SSE3指令并行编程。<br>除了上面的技巧之外，FFM的实现中还有很多调优技巧需要探索。例如，代码是按field和特征的编号申请参数空间的，如果选取了非连续或过大的编号，就会造成大量的内存浪费；在每个样本中加入值为1的新特征，相当于引入了因子化的一次项，避免了缺少一次项带来的模型偏差等。</p>
+<p>使用LIBFFM的时候，注意不同的版本参数有些许不同，在最新的一些版本中没有-on-disk命令，模型默认使用硬盘训练。</p>
+<p>####源码分析<br><a href="http://blog.csdn.net/zc02051126/article/details/54614230" target="_blank" rel="noopener">http://blog.csdn.net/zc02051126/article/details/54614230</a> 介绍的很详细</p>
+<p>###应用<br>这次腾讯比赛中我们所构造的特征有原始类别型特征和一些统计量特征。<br>FFM更适用于类别特征，将类别特征onehot编码后输入到FFM中效果更好。<br>基于GBDT的树模型更适合数值型特征。<br>当同时拥有这两类特征时，将这两个模型组合起来效果会更好。如下如所示<br><img src="http://img.blog.csdn.net/20170703171351174?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="FFM"></p>
+<p>代码戳<br><a href="https://github.com/leisurehippo/txbs/blob/master/FFM_train.py" target="_blank" rel="noopener">https://github.com/leisurehippo/txbs/blob/master/FFM_train.py</a></p>
+<p>FM和树模型都能自动学习特征交叉组合，树模型适合连续中低度稀疏数据，容易学到高阶组合；FM适合高度稀疏数据。<br>树模型和简单二阶多项式模型中存在共同问题：不能学习到数据中不存在的模式，但FM可以。这是FM在高度稀疏数据建模优势的关键。<br>神经网络处理高维稀疏离散特征的一种手段：词向量。FM可以看做一种embedding的方法。word2vec词出现在上下文的概率和两个词向量内积正相关；FM用户和商品的偏好与用户向量和商品向量内积正相关。<br>FM和embedding都是通过将高维稀疏的离散特征映射为低维向量来增强其特征的泛化能力的。</p>
+<p>###deep&amp;wide模型<br>将离散特征做低维嵌入，和连续特征一起放到神经网络里学习高度非线性的特征交叉。wide是将类别特征和数值特征一起学习，deep是一个深度网络，其实就是一些简单的relu和dense。<br>有点像上面操作的对偶形式？上面最终是用FFM学习类别特征，用xgb将数值特征提取类别特征。这个是用深度网络学习连续数值特征。用embedding的方式将离散高维特征提取低维表示。</p>
+
       
 
       
@@ -180,6 +201,17 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">ML</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
@@ -234,7 +266,18 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+
+<p>支持向量机（SVM）是一种二类分类模型。它的基本模型是定义在特征空间上的间隔最大的线性分类器，间隔最大使它有别于感知机模型；支持向量机还包括核技巧，使它成为实质上的非线性分类器。</p>
+<h2 id="线性可分支持向量机"><a href="#线性可分支持向量机" class="headerlink" title="线性可分支持向量机"></a>线性可分支持向量机</h2><p>定义超平面为 $ w·x+b=0 $ , 它由法向量 $w$ 和截距 $b$ 决定，用$(w,b)$ 表示。通过间隔最大化求得的分离超平面为 $$w^<em>·x + b^</em> = 0$$  分类决策函数为 $$f(x) = sign(w^<em>·x + b^</em>)$$ 成为线性可分支持向量机。</p>
+<p>SVM的主要思路就是 <strong>“间隔最大化”</strong>。它关心的是找到一条最优的分离边界，使得类别之间的间隔最大，或者说以充分大的确信度对训练数据进行分类。不仅将正负点分开。还要将最难分的（离超平面近）点也要有足够大的确信度将他们分开。因此，SVM会主要关心那些难分（离超平面近）的实例点。</p>
+<p>下面用数学的方式来表示“间隔”，然后最大化它。<br><strong>函数间隔：</strong> 在超平面确定的情况下，$|w·x+b|$ 能够相对地表示点x距离超平面的远近。而$w·x+b$ 的符号与y的符号是否一致能够表示分类是否正确。所以定义样本点 $(x_i,y_i)$ 对超平面$(w,b)$ 的函数间隔为$$\hat{\gamma}_i = y_i(w·x_i+b)$$ 定义超平面$(w,b)$ 关于训练数据集T的函数间隔为T中所有样本点的函数间隔的最小值$$\hat{\gamma} = \min_{i=1,…,N}\hat{\gamma}_i$$<br>但是如果成比例的改变$w$ 或者 $b$ ,函数间隔也会改变。因此引入几何间隔<br><strong>几何间隔：</strong><br>定义样本点 $(x_i,y_i)$ 对超平面$(w,b)$ 的几何间隔为$$\gamma_i = y_i(\frac{w}{||w||}·x_i+\frac{b}{||w||})$$ 定义超平面$(w,b)$ 关于训练数据集T的几何间隔为T中所有样本点的几何间隔的最小值$$\gamma = \min_{i=1,…,N}\gamma_i$$<br>易知，函数间隔和几何间隔的关系$\gamma = \frac{\hat{\gamma}}{||w||}$ 。如果成比例的改变$w$ 或者 $b$ ,几何间隔不会改变</p>
+<p>则SVM的目的<strong>“间隔最大化”</strong>用数学形式表达即以下约束最优化问题：<br>$$\max_{w,b} \quad\gamma$$ $$s.t.\quad y_i(\frac{w}{||w||}·x_i+\frac{b}{||w||})\geqslant \gamma,\quad i=1,2,…,N$$<br>即我们希望最大化超平面关于数据集的几何间隔，约束条件表明超平面关于每个样本点的几何间隔至少是$\gamma$<br>这是线性可分支持向量机的最终目标，下面就一步一步地来解决它。</p>
+<ol>
+<li>首先，利用几何间隔和函数间隔的关系重写最优化问题为$$\max_{w,b}\quad \frac{\hat{\gamma}}{||w||}$$ $$s.t.\quad y_i(w·x_i+b)\geqslant \hat\gamma,\quad i=1,2,…,N$$ 函数间隔$\gamma$ 的取值并不影响最优化问题的解。因为将 $w$ 和 $b$ 成比例缩放为$\lambda w$ 和 $\lambda b$ 后，函数间隔变成了 $\lambda \hat\gamma$，并不影响最优化目标和约束。这样可以取 $\hat\gamma = 1$ ，这样最优化问题变成了$$\min_{w,b}\quad\frac{1}{2}||w||^2$$ $$s.t.\quad y_i(w·x_i+b)-1\geqslant0,\quad i=1,2,…,N$$ 为什么把最大化$\frac{1}{||w||}$ 改写成最小化$\frac{1}{2}||w||^2$ ，我的理解是在后续的求解过程中以这种形式的求解会更加有利。（在对偶问题的求导中有利）<br>在线性可分问题中，使约束的等号成立的点称为<strong>支持向量</strong>。对于$y_i=+1$ 的正例点，支持向量在超平面$H_1:w·x+b=1$ 上，对于$y_i=-1$ 的负例点，支持向量在超平面$H_2:w·x+b=-1$ 上。两个超平面之间的间隔为$\frac{2}{||w||}$ 。 正是这些支持向量对分离超平面起作用，而其他点对于解是没有影响的。因此这种模型叫做支持向量机。</li>
+<li>这是一个带有约束的最优化问题。使用拉格朗日对偶性进行求解。首先构建拉格朗日函数，引入拉格朗日乘子$\alpha_i \geqslant 0,i=1,2,…,N$ ,定义拉格朗日函数$$L(w,b,\alpha) = \frac{1}{2}||w||^2 - \sum_{i=1}^N \alpha_i y_i(w·x_i+b)+\sum_{i=1}^N \alpha_i$$ 根据拉格朗日对偶性，原始问题的对偶问题是极大极小问题$$\max_{\alpha}\min_{w,b}L(w,b,\alpha)$$ 所以首先求$L(w,b,\alpha)$ 对$w,b$ 的极小。分别对$w,b$ 求偏导并令其为0 $$\nabla_wL(w,b,\alpha) = w-\sum_{i=1}^N \alpha_iy_ix_i = 0$$ $$\nabla_bL(w,b,\alpha) = \sum_{i=1}^N\alpha_iy_i = 0$$ 得到$$w=\sum_{i=1}^N\alpha_iy_ix_i$$ $$\sum_{i=1}^N\alpha_iy_i=0$$ 从这里可以看出，第一步中为什么把最大化$\frac{1}{||w||}$ 改写成最小化$\frac{1}{2}||w||^2$ ， 这样求导后可以直接得到$w$ ， 代回原始式子可以直接消去。将$w$代回，并利用第二个式子，即得$$L(w,b,\alpha) = \frac{1}{2}\sum_{i=1}^N\sum_{j=1}^N\alpha_i\alpha_jy_iy_j(x_i·x_j) - \sum_{i=1}^N\alpha_iy_i((\sum_{j=1}^N\alpha_jy_jx_j)·x_i+b)+\sum_{i=1}^N\alpha_i $$ 化简得 $$\min_{w,b}L(w,b,\alpha)=-\frac{1}{2}\sum_{i=1}^N\sum_{j=1}^N\alpha_i\alpha_jy_iy_j(x_i·x_j) + \sum_{i=1}^N\alpha_i$$ 于是，原始问题转换为$$\min_{\alpha}\quad\frac{1}{2}\sum_{i=1}^N\sum_{j=1}^N\alpha_i\alpha_jy_iy_j(x_i·x_j) - \sum_{i=1}^N\alpha_i$$ $$s.t.\quad\sum_{i=1}^N\alpha_iy_i = 0 \\alpha_i\geqslant0,\quad i=1,2,…,N$$ 至此，我们把最初的问题转换成了现在的形式。下一步的求解使用序列最小最优化(SMO)算法。在最后一部分给出介绍。假设我们已经求得解$\alpha^<em>=(\alpha_1^</em>,\alpha_2^<em>,…,\alpha_l^</em>)^T$ ,我们可以利用下式求得原始问题的解$w^<em>,b^</em>$ $$w^<em> = \sum_{i=1}^N\alpha_i^</em>y_ix_i$$ 选择$\alpha^<em>$ 的一个正分量，计算$\alpha_j^</em>&gt;0$ $$b^<em> = y_j-\sum_{i=1}^N\alpha_i^</em>y_i(x_i·x_j)$$ 证明时利用KKT条件的对偶互补条件可得。<br>考虑此时的支持向量，为$\alpha_i^<em>&gt;0$ 的点。（$\alpha_i^</em>=0$ 的点对求解并没有实质性作用）<h2 id="线性不可分支持向量机"><a href="#线性不可分支持向量机" class="headerlink" title="线性不可分支持向量机"></a>线性不可分支持向量机</h2>对于线性不可分问题，原始问题的约束条件（函数间隔大于等于1）就会不满足了。这时可以对每个样本点引入一个<strong>松弛变量</strong> $\xi_i\geqslant0$ , 这样约束条件就变成了$y_i(w·x+b)\geqslant1-\xi_i$， 对于每个松弛变量支付一个代价$\xi_i$ ， 目标函数变为$\frac{1}{2}||w||^2+C\sum_{i=1}^N\xi_i$，C为惩罚参数。它调和最大化间隔和最小化误分类点二者。则对于线性不可分问题，学习问题变为$$\min_{w,b,\xi}\quad \frac{1}{2}||w||^2+C\sum_{i=1}^N\xi_i$$ $$s.t.\quad y_i(w·x+b)\geqslant1-\xi_i,\quad i=1,2,…,N$$ $$\xi_i\geqslant0,\quad i=1,2,…,N$$ 可以证明$w$ 的解是唯一的，b的解不唯一，存在一个区间。<br>求解时还是先写出拉格朗日函数，求其对偶问题。拉格朗日函数为$$L(w,b,\xi,\alpha,\mu) = \frac{1}{2}||w||^2 + C\sum_{i=1}^N\xi_i - \sum_{i=1}^N\alpha_i(y_i(w·x_i+b)-1+\xi_i) - \sum_{i=1}^N\mu_i\xi_i$$ 然后对$w,b,\xi$ 求导使其为0，即 $$\nabla_wL(w,b,\xi,\alpha,\mu) = w-\sum_{i=1}^N \alpha_iy_ix_i = 0$$ $$\nabla_bL(w,b,\xi,\alpha,\mu) = -\sum_{i=1}^N\alpha_iy_i = 0$$ $$\nabla_{\xi_i}L(w,b,\xi,\alpha,\mu) = C-\alpha_i-\mu_i = 0$$ 带回原式。这时学习对偶算法为 $$\min_{\alpha} \quad \frac{1}{2}\sum_{i=1}^N\sum_{j=1}^N\alpha_i\alpha_jy_iy_j(x_i·x_j)-\sum_{i=1}^N\alpha_i$$ $$s.t.\quad \sum_{i=1}^N\alpha_iy_i=0$$ $$0\leqslant \alpha_i\leqslant C,\quad i=1,2,…,N$$ 很巧的是尽管引入了松弛变量，在最后的对偶问题中并没有出现，只是在约束中出现了惩罚系数C，目标函数和线性可分问题是一样的。<br>下一步的求解仍是使用SMO算法，最终结果和线性可分问题几乎一样，在计算$b^<em>$ 时，选择$0&lt; \alpha_j^</em>&lt;C$ 由于原始问题对b的解不唯一，实际问题中可以取所有符合条件的样本点计算，然后取平均。<br>软间隔的支持向量是$\alpha_i^<em>&gt;0$ 的点。但是这些点不一定在间隔边界上。若$\alpha_i^</em>&lt;C$ 则$\xi_i=0$，支持向量在间隔边界上；若$\alpha_i^<em>=C，0&lt;\xi_i&lt;1$ ，分类正确，支持向量在间隔边界和分离超平面之间；若$\alpha_i^</em>=C，\xi_i=1$ ，支持向量在分离超平面上；若$\alpha_i^*=C，\xi_i&gt;1$ ，支持向量在分离超平面误分一侧。<br>###SVM另一种解释方式<br>通过软间隔最大化，可以引出SVM的另一种解释方式，正则化的合页损失函数的最小化问题。最小化以下目标$$\sum_{i=1}^N [1-y_i(w·x_i+b)]<em>++\lambda||w||^2$$ 式中第一项是经验损失，函数$L(y(w·x+b))=[1-y(w·x+b)]</em>+$ 称为<strong>合页损失函数</strong>(hinge loss function)。$[z]_+$表示当z小于0时，取值为0，大于零时取值为z。在cs231n里，这个也写作$max(0,1-y_i(w·x_i+b))$<br>这就是说当样本点被正确分类且函数间隔$y_i(w·x_i+b)$ 大于1时，损失是0。否则是$1-y_i(w·x_i+b)$<br>以下给出简单证明，两种解释方式等价。<br>令$[1-y_i(w·x_i+b)]_+=\xi_i$ ，易知线性不可分支持向量机的目标约束成立。最优化目标写成$$\min_{w,b} \quad \sum_{i=1}^N \xi_i+\lambda||w||^2$$ ，若取$\lambda=\frac{1}{2C}$ 。则两种解释方式等价。<br>在吴恩达的机器学习视频里，是从逻辑回归LR中引出SVM的。他们的区别在于LR使用的是对数损失函数，而SVM使用的是合页损失函数。不同损失函数如下。<br><img src="http://img.blog.csdn.net/20171009123842129?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="loss"><br>两个损失函数的目的都是增加对分类影响较大的数据点的权重。SVM是只考虑支持向量，而LR通过非线性映射，大大减小了离分类平面较远点的权重。<br>相比来说，SVM的独特点在于它的核技巧。但是，不代表核技巧是SVM专有的。Kernel Logistic Regression(KLR)也很常见，FM/FFM也算是KLR。<br>关于正则项，LR需要在损失函数中添加，但是SVM损失函数就自带L2正则项！很神奇<br>关于何时使用哪种分类算法，下面贴出吴恩达的解释<br><img src="http://img.blog.csdn.net/20171009125228730?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="LR vs SVM"><br>关于核技巧，下一篇文章将进行说明。</li>
+</ol>
+
       
 
       
@@ -242,6 +285,17 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">ML</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
