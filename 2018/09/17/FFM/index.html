@@ -22,7 +22,7 @@
 <meta property="og:image" content="http://img.blog.csdn.net/20170703151119791?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
 <meta property="og:image" content="http://img.blog.csdn.net/20170703154606215?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
 <meta property="og:image" content="http://img.blog.csdn.net/20170703171351174?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
-<meta property="og:updated_time" content="2018-09-17T09:00:07.796Z">
+<meta property="og:updated_time" content="2018-09-18T02:35:23.137Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="FFM">
 <meta name="twitter:description" content="本文参考了美团团队的介绍文章。https://tech.meituan.com/deep_understanding_of_ffm_principles_and_practices.html以及http://blog.csdn.net/zc02051126/article/details/54614230 FM和FFM模型是最近几年提出的模型，凭借其在数据量比较大并且特征稀疏的情况下，仍然能够">
@@ -185,7 +185,7 @@
         <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
 
 <p>本文参考了美团团队的介绍文章。<br><a href="https://tech.meituan.com/deep_understanding_of_ffm_principles_and_practices.html" target="_blank" rel="noopener">https://tech.meituan.com/deep_understanding_of_ffm_principles_and_practices.html</a><br>以及<br><a href="http://blog.csdn.net/zc02051126/article/details/54614230" target="_blank" rel="noopener">http://blog.csdn.net/zc02051126/article/details/54614230</a></p>
-<p>FM和FFM模型是最近几年提出的模型，凭借其在数据量比较大并且特征稀疏的情况下，仍然能够得到优秀的性能和效果的特性，屡次在各大公司举办的CTR预估比赛中获得不错的战绩。</p>
+<p>FM和FFM模型是最近几年提出的模型，凭借其在数据量比较大并且特征稀疏的情况下，仍然能够得到优秀的性能和效果的特性，屡次在各大公司举办的CTR预估比赛中获得不错的战绩。<br><a id="more"></a></p>
 <p>###FM原理<br>FM模型的提出旨在解决稀疏数据下的特征组合问题。假设一个广告分类问题，根据广告位信息和用户信息，预测用户是否点击广告。<br>| Clicked? | Country | Day | Ad_type |<br>| :– | : – | : – | :– |<br>|1|USA|26/11/15|Movie<br>|0|China|1/7/14|Game<br>|1|China|19/2/15|Game</p>
 <p>三个特征都是类别型特征，经过one-hot编码<br>|Clicked?|Country=USA|Country=China|Day=26/11/15 | Day=1/7/14|Day=19/2/15|Ad_type=Movie|Ad_type=Game|<br>| :– | : – | : – | :– |<br>|1|1|0|1|0|0|1|0<br>|1|0|1|0|1|0|0|1<br>|1|0|1|0|0|1|0|1</p>
 <p>通过观察可以发现，某些特征经过关联会更加有意义。比如Country=USA和Day=26/11/15（感恩节），Country=USA和Day=19/2/15（春节）这样的关联对用户的点击有着正向的影响。而一些其他的组合（Country=USA和Day=26/11/15）可能对用户点击并没有那么强烈的影响。因此引入两个特征的组合是非常有意义的。</p>
@@ -406,11 +406,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">ML</a>
+                <a href="javascript:void(0)" class="js-tag color1">Algorithms</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Algorithms</a>
+                <a href="javascript:void(0)" class="js-tag color3">ML</a>
               </li>
             
             <div class="clearfix"></div>
