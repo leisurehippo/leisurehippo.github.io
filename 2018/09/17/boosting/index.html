@@ -24,7 +24,7 @@
 <meta property="og:image" content="http://img.blog.csdn.net/20171011211351145?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
 <meta property="og:image" content="http://img.blog.csdn.net/20171011215348741?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
 <meta property="og:image" content="http://img.blog.csdn.net/20171011220423771?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpc3VyZWhpcHBv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
-<meta property="og:updated_time" content="2018-09-18T02:48:15.349Z">
+<meta property="og:updated_time" content="2018-09-18T02:53:37.848Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="boosting">
 <meta name="twitter:description" content="提升方法的基本思路就是组合多个弱学习算法构成一个强的学习算法。">
@@ -187,7 +187,7 @@
         <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
 
 <p>提升方法的基本思路就是组合多个弱学习算法构成一个强的学习算法。<br><a id="more"></a><br>[TOC]</p>
-<h3 id="AdaBoost算法"><a href="#AdaBoost算法" class="headerlink" title="AdaBoost算法"></a>AdaBoost算法</h3><p>AdaBoost算法的思路是，每次用一个弱学习算法对数据进行学习时，更加关注由上一个算法学习后被分类错误的数据。最后将各个弱学习算法按不同权值加和组成强学习算法。具体算法如下：</p>
+<h1 id="AdaBoost算法"><a href="#AdaBoost算法" class="headerlink" title="AdaBoost算法"></a>AdaBoost算法</h1><p>AdaBoost算法的思路是，每次用一个弱学习算法对数据进行学习时，更加关注由上一个算法学习后被分类错误的数据。最后将各个弱学习算法按不同权值加和组成强学习算法。具体算法如下：</p>
 <ol>
 <li>初始化训练数据的权值$$D_1 = (w_{11},…,w_{1i},…,w_{1N}),\quad w_{1i}=\frac{1}{N}, \quad i=1,2,…,N$$</li>
 <li>对m=1,2,…,M<br>(a) 使用具有权值分布$D_m$的数据集进行学习，得到基本分类器$G_m(x):\mathcal{X} \to {-1,+1}$<br>(b) 计算$G_m(x)$ 在训练数据集上的分类误差率$$e_m = P(G_m(x_i)\ne y_i)=\sum_{i=1}^Nw_{mi}I(G_m(x_i)\ne y_i) = \sum_{G_m(x_i)\ne y_i}w_{wi}$$<br>(c) 计算$G_m(x)$ 的系数$$\alpha_m = \frac{1}{2}ln\frac{1-e_m}{e_m}$$<br>(d) 更新数据集的权值分布$$D_{m+1}=(w_{m+1,1},…,w_{m+1,i},…,w_{m+1,N})$$ $$w_{m+1,i} = \frac{w_{mi}}{Z_m}exp(-\alpha_my_iG_m(x_i)),\quad i=1,2,…,N$$ $Z_m$ 是规范化因子，使$D_{m+1}$ 成为一个概率分布$$Z_m = \sum_{i=1}^Nw_{mi}exp(-\alpha_my_iG_m(x_i))$$</li>
